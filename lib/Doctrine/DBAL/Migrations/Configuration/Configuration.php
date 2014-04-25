@@ -249,12 +249,16 @@ class Configuration
      * with the pattern VersionYYYYMMDDHHMMSS.php as the filename and registers
      * them as migrations.
      *
-     * @param string $path The root directory to where some migration classes live.
+     * @param string $path            The root directory for migrations classes
+     * @param string $customNamespace Migrations custom namespace
      *
      * @return Version[] The array of migrations registered.
      */
-    public function registerMigrationsFromDirectory($path)
+    public function registerMigrationsFromDirectory($path, $customNamespace = null)
     {
+        if (is_null($customNamespace) || !is_string($customNamespace)) {
+          $customNamespace = $this->migrationsNamespace;
+        }
         $path = realpath($path);
         $path = rtrim($path, '/');
         $files = glob($path . '/Version*.php');
@@ -264,7 +268,7 @@ class Configuration
                 require_once($file);
                 $info = pathinfo($file);
                 $version = substr($info['filename'], 7);
-                $class = $this->migrationsNamespace . '\\' . $info['filename'];
+                $class = $customNamespace . '\\' . $info['filename'];
                 $versions[] = $this->registerMigration($version, $class);
             }
         }
